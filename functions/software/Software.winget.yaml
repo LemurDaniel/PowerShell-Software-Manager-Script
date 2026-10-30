@@ -21,7 +21,7 @@ process:
 
     list:
       - |
-        Get-WinGetPackage 
+        Get-WinGetPackage
         | Where-Object -Property ID -Match "^.*\.+.*"
         | ForEach-Object {
             [PSCustomObject]@{
@@ -33,260 +33,254 @@ process:
 
 packages:
   # ///////////////////////////////////////////////////////////
-  # Git version control system
-  - id: Git.Git
-    name: Git.Git
-    info: Git version control
+  # Sub Category: Development
+  - category: Development
+    packages:
+      # Git version control system
+      - id: Git.Git
+        name: Git.Git
+        info: Git version control
 
-    # ///////////////////////////////////////////////////////////
-    # Notepad++ text and code editor
-  - id: Notepad++.Notepad++
-    name: Notepad++.Notepad++
-    info: Text/code editor
+      # Visual Studio Code editor
+      - id: Microsoft.VisualStudioCode
+        name: Microsoft.VisualStudioCode
+        info: VS Code editor
 
-    # ///////////////////////////////////////////////////////////
-    # OBS Studio streaming and recording software
-  - id: OBSProject.OBSStudio
-    name: OBSProject.OBSStudio
-    info: Streaming software
+      # Visual Studio 2022 Community IDE
+      - id: Microsoft.VisualStudio.2022.Community
+        name: Microsoft.VisualStudio.2022.Community
+        info: VS 2022 IDE
 
-    # ///////////////////////////////////////////////////////////
-    # FreeCAD 3D parametric modeling software
-  - id: FreeCAD.FreeCAD
-    name: FreeCAD.FreeCAD
-    info: 3D CAD modeling
+      # Notepad++ text and code editor
+      - id: Notepad++.Notepad++
+        name: Notepad++.Notepad++
+        info: Text/code editor
 
-    # ///////////////////////////////////////////////////////////
-    # Ultimaker Cura 3D printing slicer
-  - id: Ultimaker.Cura
-    name: Ultimaker.Cura
-    info: 3D slicer
+      # PowerShell scripting environment
+      - id: Microsoft.PowerShell
+        name: Microsoft.PowerShell
+        info: PowerShell scripting
 
-    # ///////////////////////////////////////////////////////////
-    # SQLite database engine
-  - id: SQLite.SQLite
-    name: SQLite.SQLite
-    info: SQL database
+      # Windows Terminal modern terminal application
+      - id: Microsoft.WindowsTerminal
+        name: Microsoft.WindowsTerminal
+        info: Windows terminal
 
-    # ///////////////////////////////////////////////////////////
-    # GnuPG encryption suite for Windows
-  - id: GnuPG.Gpg4win
-    name: GnuPG.Gpg4win
-    info: Encryption suite
+      # Node.js JavaScript runtime (LTS)
+      - id: OpenJS.NodeJS.LTS
+        name: OpenJS.NodeJS.LTS
+        info: Node.js runtime
 
-    # ///////////////////////////////////////////////////////////
-    # jq JSON processor command line tool
-  - id: jqlang.jq
-    name: jqlang.jq
-    info: JSON processor
+      # .NET 8 Software Development Kit (LTS)
+      - id: Microsoft.DotNet.SDK.8
+        name: Microsoft.DotNet.SDK.8
+        info: .NET 8 SDK
 
-    # ///////////////////////////////////////////////////////////
-    # Balena Etcher bootable USB creator
-  - id: Balena.Etcher
-    name: Balena.Etcher
-    info: Bootable USB creator
+      # jq JSON processor command line tool
+      - id: jqlang.jq
+        name: jqlang.jq
+        info: JSON processor
 
-    # ///////////////////////////////////////////////////////////
-    # RivaTuner Statistics Server gaming overlay
-  - id: Guru3D.RTSS
-    name: Guru3D.RTSS
-    info: Game stats overlay
+      # Postman API development and testing
+      - id: Postman.Postman
+        name: Postman.Postman
+        info: API testing
 
-    # ///////////////////////////////////////////////////////////
-    # Node.js JavaScript runtime (LTS)
-  - id: OpenJS.NodeJS.LTS
-    name: OpenJS.NodeJS.LTS
-    info: Node.js runtime
+      # Genymotion Android device emulator
+      - id: Genymobile.Genymotion
+        name: Genymobile.Genymotion
+        info: Android device emulator
 
-    # ///////////////////////////////////////////////////////////
-    # Kubernetes command line interface
-  - id: Kubernetes.kubectl
-    name: Kubernetes.kubectl
-    info: Kubernetes CLI
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Azure & Cloud
+  - category: Azure & Cloud
+    packages:
+      # Azure command line interface
+      - id: Microsoft.AzureCLI
+        name: Microsoft.AzureCLI
+        info: Azure CLI
 
-    # ///////////////////////////////////////////////////////////
-    # Exec credential plugin kubectl needs for Entra-ID enabled AKS clusters.
-    # NOTE: 'int128.kubelogin' is a different tool, this is the Azure one.
-  - id: Microsoft.Azure.Kubelogin
-    name: Microsoft.Azure.Kubelogin
-    info: AKS Entra-ID login plugin
+      # Azure Bicep infrastructure as code
+      - id: Microsoft.Bicep
+        name: Microsoft.Bicep
+        info: Azure IaC tool
 
-    # ///////////////////////////////////////////////////////////
-    # 7-Zip file archiver and compressor
-  - id: 7zip.7zip
-    name: 7zip.7zip
-    info: File archiving
+      # Azure Functions Core Tools
+      - id: Microsoft.Azure.FunctionsCoreTools
+        name: Microsoft.Azure.FunctionsCoreTools
+        info: Azure Functions local
 
-    # ///////////////////////////////////////////////////////////
-    # GIMP image manipulation program
-  - id: GIMP.GIMP
-    name: GIMP.GIMP
-    info: Image editor
+      # Azure Storage Explorer
+      - id: Microsoft.Azure.StorageExplorer
+        name: Microsoft.Azure.StorageExplorer
+        info: Azure storage explorer
 
-    # ///////////////////////////////////////////////////////////
-    # Opera web browser
-  - id: Opera.Opera
-    name: Opera.Opera
-    info: Opera browser
+      # Azure AZCopy file transfer utility
+      - id: Microsoft.Azure.AZCopy.10
+        name: Microsoft.Azure.AZCopy.10
+        info: Azure file transfer
 
-    # ///////////////////////////////////////////////////////////
-    # Opera GX gaming browser
-  - id: Opera.OperaGX
-    name: Opera.OperaGX
-    info: Opera GX browser
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Containers & Kubernetes
+  - category: Containers & Kubernetes
+    packages:
+      # Docker Desktop containerization platform
+      - id: Docker.DockerDesktop
+        name: Docker.DockerDesktop
+        info: Docker containers
 
-    # ///////////////////////////////////////////////////////////
-    # Steam gaming platform
-  - id: Valve.Steam
-    name: Valve.Steam
-    info: Steam platform
+      # Kubernetes command line interface
+      - id: Kubernetes.kubectl
+        name: Kubernetes.kubectl
+        info: Kubernetes CLI
 
-    # ///////////////////////////////////////////////////////////
-    # Discord chat and voice communication
-  - id: Discord.Discord
-    name: Discord.Discord
-    info: Discord chat/voice
+      # Exec credential plugin kubectl needs for Entra-ID enabled AKS clusters.
+      # NOTE: 'int128.kubelogin' is a different tool, this is the Azure one.
+      - id: Microsoft.Azure.Kubelogin
+        name: Microsoft.Azure.Kubelogin
+        info: AKS Entra-ID login plugin
 
-    # ///////////////////////////////////////////////////////////
-    # Draw.io diagram and flowchart creator
-  - id: JGraph.Draw
-    name: JGraph.Draw
-    info: Draw.io diagrams
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Databases & Data
+  - category: Databases & Data
+    packages:
+      # SQLite database engine
+      - id: SQLite.SQLite
+        name: SQLite.SQLite
+        info: SQL database
 
-    # ///////////////////////////////////////////////////////////
-    # Postman API development and testing
-  - id: Postman.Postman
-    name: Postman.Postman
-    info: API testing
+      # SQL Server Management Studio
+      - id: Microsoft.SQLServerManagementStudio
+        name: Microsoft.SQLServerManagementStudio
+        info: SQL management
 
-    # ///////////////////////////////////////////////////////////
-    # Citrix Workspace remote desktop and applications
-  - id: Citrix.Workspace
-    name: Citrix.Workspace
-    info: Remote desktop/app
+      # Azure Data Studio
+      - id: Microsoft.Azure.DataStudio
+        name: Microsoft.Azure.DataStudio
+        info: Data analytics studio
 
-    # ///////////////////////////////////////////////////////////
-    # Docker Desktop containerization platform
-  - id: Docker.DockerDesktop
-    name: Docker.DockerDesktop
-    info: Docker containers
+      # MySQL Workbench database administration
+      - id: Oracle.MySQLWorkbench
+        name: Oracle.MySQLWorkbench
+        info: MySQL admin
 
-    # ///////////////////////////////////////////////////////////
-    # Obsidian markdown knowledge base
-  - id: Obsidian.Obsidian
-    name: Obsidian.Obsidian
-    info: Markdown notes
+      # Microsoft Power BI analytics and visualization
+      - id: Microsoft.PowerBI
+        name: Microsoft.PowerBI
+        info: Analytics/visualization
 
-    # ///////////////////////////////////////////////////////////
-    # Nmap network discovery and security scanner
-  - id: Insecure.Nmap
-    name: Insecure.Nmap
-    info: Network scanner
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Productivity & Communication
+  - category: Productivity & Communication
+    packages:
+      # Claude desktop app by Anthropic
+      - id: Anthropic.Claude
+        name: Anthropic.Claude
+        info: Claude desktop app
 
-    # ///////////////////////////////////////////////////////////
-    # CrystalDiskMark disk benchmark utility
-  - id: CrystalDewWorld.CrystalDiskMark
-    name: CrystalDewWorld.CrystalDiskMark
-    info: Disk benchmark
+      # Obsidian markdown knowledge base
+      - id: Obsidian.Obsidian
+        name: Obsidian.Obsidian
+        info: Markdown notes
 
-    # ///////////////////////////////////////////////////////////
-    # CrystalDiskInfo disk health monitoring
-  - id: CrystalDewWorld.CrystalDiskInfo
-    name: CrystalDewWorld.CrystalDiskInfo
-    info: Disk health monitor
+      # Draw.io diagram and flowchart creator
+      - id: JGraph.Draw
+        name: JGraph.Draw
+        info: Draw.io diagrams
 
-    # ///////////////////////////////////////////////////////////
-    # Microsoft Teams collaboration platform
-  - id: Microsoft.Teams
-    name: Microsoft.Teams
-    info: Teams collaboration
+      # Microsoft Teams collaboration platform
+      - id: Microsoft.Teams
+        name: Microsoft.Teams
+        info: Teams collaboration
 
-    # ///////////////////////////////////////////////////////////
-    # Azure command line interface
-  - id: Microsoft.AzureCLI
-    name: Microsoft.AzureCLI
-    info: Azure CLI
+      # Discord chat and voice communication
+      - id: Discord.Discord
+        name: Discord.Discord
+        info: Discord chat/voice
 
-    # ///////////////////////////////////////////////////////////
-    # Azure Bicep infrastructure as code
-  - id: Microsoft.Bicep
-    name: Microsoft.Bicep
-    info: Azure IaC tool
+      # Citrix Workspace remote desktop and applications
+      - id: Citrix.Workspace
+        name: Citrix.Workspace
+        info: Remote desktop/app
 
-    # ///////////////////////////////////////////////////////////
-    # Microsoft Power BI analytics and visualization
-  - id: Microsoft.PowerBI
-    name: Microsoft.PowerBI
-    info: Analytics/visualization
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: 3D & Media
+  - category: 3D & Media
+    packages:
+      # FreeCAD 3D parametric modeling software
+      - id: FreeCAD.FreeCAD
+        name: FreeCAD.FreeCAD
+        info: 3D CAD modeling
 
-    # ///////////////////////////////////////////////////////////
-    # Windows Terminal modern terminal application
-  - id: Microsoft.WindowsTerminal
-    name: Microsoft.WindowsTerminal
-    info: Windows terminal
+      # Ultimaker Cura 3D printing slicer
+      - id: Ultimaker.Cura
+        name: Ultimaker.Cura
+        info: 3D slicer
 
-    # ///////////////////////////////////////////////////////////
-    # Visual Studio Code editor
-  - id: Microsoft.VisualStudioCode
-    name: Microsoft.VisualStudioCode
-    info: VS Code editor
+      # GIMP image manipulation program
+      - id: GIMP.GIMP
+        name: GIMP.GIMP
+        info: Image editor
 
-    # ///////////////////////////////////////////////////////////
-    # Visual Studio 2022 Community IDE
-  - id: Microsoft.VisualStudio.2022.Community
-    name: Microsoft.VisualStudio.2022.Community
-    info: VS 2022 IDE
+      # OBS Studio streaming and recording software
+      - id: OBSProject.OBSStudio
+        name: OBSProject.OBSStudio
+        info: Streaming software
 
-    # ///////////////////////////////////////////////////////////
-    # SQL Server Management Studio
-  - id: Microsoft.SQLServerManagementStudio
-    name: Microsoft.SQLServerManagementStudio
-    info: SQL management
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: System & Utilities
+  - category: System & Utilities
+    packages:
+      # 7-Zip file archiver and compressor
+      - id: 7zip.7zip
+        name: 7zip.7zip
+        info: File archiving
 
-    # ///////////////////////////////////////////////////////////
-    # Azure Functions Core Tools
-  - id: Microsoft.Azure.FunctionsCoreTools
-    name: Microsoft.Azure.FunctionsCoreTools
-    info: Azure Functions local
+      # GnuPG encryption suite for Windows
+      - id: GnuPG.Gpg4win
+        name: GnuPG.Gpg4win
+        info: Encryption suite
 
-    # ///////////////////////////////////////////////////////////
-    # Azure Storage Explorer
-  - id: Microsoft.Azure.StorageExplorer
-    name: Microsoft.Azure.StorageExplorer
-    info: Azure storage explorer
+      # Balena Etcher bootable USB creator
+      - id: Balena.Etcher
+        name: Balena.Etcher
+        info: Bootable USB creator
 
-    # ///////////////////////////////////////////////////////////
-    # Azure Data Studio
-  - id: Microsoft.Azure.DataStudio
-    name: Microsoft.Azure.DataStudio
-    info: Data analytics studio
+      # Nmap network discovery and security scanner
+      - id: Insecure.Nmap
+        name: Insecure.Nmap
+        info: Network scanner
 
-    # ///////////////////////////////////////////////////////////
-    # PowerShell scripting environment
-  - id: Microsoft.PowerShell
-    name: Microsoft.PowerShell
-    info: PowerShell scripting
+      # CrystalDiskMark disk benchmark utility
+      - id: CrystalDewWorld.CrystalDiskMark
+        name: CrystalDewWorld.CrystalDiskMark
+        info: Disk benchmark
 
-    # ///////////////////////////////////////////////////////////
-    # .NET 8 Software Development Kit (LTS)
-  - id: Microsoft.DotNet.SDK.8
-    name: Microsoft.DotNet.SDK.8
-    info: .NET 8 SDK
+      # CrystalDiskInfo disk health monitoring
+      - id: CrystalDewWorld.CrystalDiskInfo
+        name: CrystalDewWorld.CrystalDiskInfo
+        info: Disk health monitor
 
-    # ///////////////////////////////////////////////////////////
-    # Azure AZCopy file transfer utility
-  - id: Microsoft.Azure.AZCopy.10
-    name: Microsoft.Azure.AZCopy.10
-    info: Azure file transfer
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Browsers & Gaming
+  - category: Browsers & Gaming
+    packages:
+      # Opera web browser
+      - id: Opera.Opera
+        name: Opera.Opera
+        info: Opera browser
 
-    # ///////////////////////////////////////////////////////////
-    # MySQL Workbench database administration
-  - id: Oracle.MySQLWorkbench
-    name: Oracle.MySQLWorkbench
-    info: MySQL admin
+      # Opera GX gaming browser
+      - id: Opera.OperaGX
+        name: Opera.OperaGX
+        info: Opera GX browser
 
-    # ///////////////////////////////////////////////////////////
-    # Genymotion Android device emulator
-  - id: Genymobile.Genymotion
-    name: Genymobile.Genymotion
-    info: Android device emulator
+      # Steam gaming platform
+      - id: Valve.Steam
+        name: Valve.Steam
+        info: Steam platform
+
+      # RivaTuner Statistics Server gaming overlay
+      - id: Guru3D.RTSS
+        name: Guru3D.RTSS
+        info: Game stats overlay
