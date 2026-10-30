@@ -222,6 +222,50 @@ packages:
         name: BlenderFoundation.Blender
         info: Blender 3D suite
 
+      # Blender MCP (ahujasid): uv + Blender add-on + Claude Desktop config in one step.
+      # NOTE: not a winget package, so it is never detected as installed. Re-running is safe.
+      - id: ahujasid.BlenderMCP
+        name: ahujasid.BlenderMCP
+        info: Blender MCP for Claude
+        install: |
+          $ErrorActionPreference = 'Stop'
+
+          # >> uv provides 'uvx', which runs the MCP server
+          if ($null -EQ (Get-WinGetPackage -Id astral-sh.uv -MatchOption Equals)) {
+              Install-WinGetPackage -Id astral-sh.uv -Verbose
+          }
+
+          # >> Locate newest Blender installation
+          $blender = Get-ChildItem -Path "$env:ProgramFiles\Blender Foundation" -Filter blender.exe -Recurse -ErrorAction SilentlyContinue
+          | Sort-Object -Property LastWriteTime -Descending
+          | Select-Object -First 1
+          if ($null -EQ $blender) {
+              throw "Blender not found. Install 'BlenderFoundation.Blender' first."
+          }
+
+          # >> Download add-on and install + enable it in Blender
+          $addon = Join-Path $env:TEMP 'blender_mcp_addon.py'
+          $enable = Join-Path $env:TEMP 'blender_mcp_enable.py'
+          Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/ahujasid/blender-mcp/main/addon.py' -OutFile $addon
+          @"
+          import bpy
+          bpy.ops.preferences.addon_install(filepath=r'$addon', overwrite=True)
+          bpy.ops.preferences.addon_enable(module='blender_mcp_addon')
+          bpy.ops.wm.save_userpref()
+          "@ | Set-Content -Path $enable
+          & $blender.FullName --background --python $enable
+
+          # >> Register MCP server in Claude Desktop
+          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+          $config = (Test-Path $configPath) ? (Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable) : $null
+          $config ??= @{}
+          $config.mcpServers ??= @{}
+          $config.mcpServers.blender = @{ command = 'uvx'; args = @('blender-mcp') }
+          $null = New-Item -ItemType Directory -Path (Split-Path $configPath) -Force
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+
+          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop, then in Blender: N-Panel > BlenderMCP > Connect"
+
       # Ultimaker Cura 3D printing slicer
       - id: Ultimaker.Cura
         name: Ultimaker.Cura
