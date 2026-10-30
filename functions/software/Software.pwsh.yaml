@@ -1,0 +1,71 @@
+displayName: PowerShell Modules
+description: PowerShell Package Manager (PSPW) modules management
+
+process:
+  path: pwsh
+  args:
+    - -NoProfile
+    - -NonInteractive
+    - -Command
+
+  commands:
+    install:
+      - Install-Module -Name ${id} -Scope CurrentUser -Force -Verbose
+
+    update:
+      - Update-Module -Name ${id} -Scope CurrentUser -Verbose
+
+    deinstall:
+      - Uninstall-Module -Name ${id} -Scope CurrentUser -Verbose
+
+    list:
+      - |
+        Get-Module -ListAvailable 
+        | ForEach-Object {
+            [PSCustomObject]@{
+                id      = $_.Name
+                version = $_.Version.ToString()
+            }
+        }
+        | ConvertTo-Json -Depth 3
+
+packages:
+  - id: Pester
+    name: Pester
+    info: PowerShell testing framework
+
+  - id: OneDrive
+    name: OneDrive
+    info: OneDrive PowerShell module
+
+  - id: ImportExcel
+    name: ImportExcel
+    info: Excel import/export module
+
+  - id: Microsoft.WinGet.Client
+    name: Microsoft.WinGet.Client
+    info: WinGet PowerShell client
+
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Azure Modules
+  - category: Azure Modules
+    packages:
+      - id: Az
+        name: Az
+        info: Azure PowerShell module
+
+      - id: Bicep
+        name: Bicep
+        info: Azure Bicep IaC module
+ 
+      - id: Az.ResourceGraph
+        name: Az.ResourceGraph
+        info: Azure Resource Graph module
+
+      - id: AzTable
+        name: AzTable
+        info: Azure Table storage module
+
+      - id: Microsoft.Graph.Entra
+        name: Microsoft.Graph.Entra
+        info: Microsoft Graph Entra ID module

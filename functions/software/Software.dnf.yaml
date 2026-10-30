@@ -1,0 +1,178 @@
+displayName: DNF Packages
+description: DNF packages management
+
+process:
+  path: pwsh
+  args:
+    - -NoProfile
+    - -NonInteractive
+    - -Command
+
+  commands:
+    install:
+      - sudo dnf install ${id}
+
+    update:
+      - sudo dnf update ${id}
+
+    deinstall:
+      - sudo dnf remove ${id}
+
+    list:
+      - |
+        dnf list --installed
+        | ForEach-Object {
+          $item = $_.split(" ") | Where-Object -Property Length -GT 0
+          if($item.Count -LT 3) {
+              return
+          }
+          return [PSCustomObject]@{
+                id      = $item[0].Trim().Split(".") | Select-Object -First 1
+                version = $item[1].Trim().Split(" ") | Select-Object -Last 1
+            }
+        }
+        | Where-Object { $_ -NE $null }
+        | ConvertTo-Json -Depth 3
+
+packages:
+
+  # ///////////////////////////////////////////////////////////
+  # Opera Web Browser for Linux
+  - id: opera-stable
+    name: Opera Browser
+    info: Opera Web Browser for Linux
+
+  - id: opera-fix
+    name: opera ffmpeg fix
+    info: Fix for streaming twitch videos
+    install:
+      #!/usr/bin/env bash
+      # fix-opera-codecs.sh — als Postinstall-Hook oder systemd-Path-Unit
+
+      - set -euo pipefail
+      - CHROMIUM_VER=$(opera --version | grep -oP '^\d+')  # Opera Major
+      # Mapping: Opera Major → Chromium Major (Tabelle pflegen oder per API)
+      - |
+        declare -A OPERA_TO_CHROMIUM=(
+        [131]="147"
+        [130]="146"
+        [129]="145"
+        )
+      - TARGET_CHROMIUM="${OPERA_TO_CHROMIUM[$CHROMIUM_VER]}"
+
+      # Passende Release per GitHub API finden
+      - |
+        RELEASE_URL=$(curl -s https://api.github.com/repos/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases \
+        | jq -r --arg ver "Chromium $TARGET_CHROMIUM" '
+          .[] | select(.body | contains($ver))
+          | .assets[] | select(.name | test("linux-x64.zip$"))
+          | .browser_download_url
+        ' | head -1)
+
+      # Download + Install
+      - TMPDIR=$(mktemp -d)
+      - curl -L "$RELEASE_URL" -o "$TMPDIR/ffmpeg.zip"
+      - unzip -o "$TMPDIR/ffmpeg.zip" libffmpeg.so -d "$TMPDIR"
+      - sudo install -m 644 -o root -g root "$TMPDIR/libffmpeg.so" /usr/lib/chromium-browser/libffmpeg.so
+
+      # Symlink (idempotent)
+      - sudo ln -sfn /usr/lib/chromium-browser/libffmpeg.so /usr/lib64/opera-stable/libffmpeg.so
+
+      - rm -rf "$TMPDIR"
+      - echo "✅ Opera codec fix applied for Chromium $TARGET_CHROMIUM"
+
+  - category: 3D Modelling
+    packages:
+    - id: blender
+      name: Blender
+      info: Blender 3D Suite
+
+    - id: openscad
+      name: Open Scad
+      info: Parametric Modelling
+
+    - id: plasticity
+      name: Plasticity
+      info: CAD-Software für Künstler (NURBS-basiert)
+      install:
+      - |
+        $DOWNLOAD_URL = (Invoke-RestMethod -Uri "https://api.github.com/repos/nkallen/plasticity/releases/latest").assets
+        | Where-Object { $_.browser_download_url -match "x86_64\.rpm" }
+        | Select-Object -First 1 -ExpandProperty browser_download_url
+      - curl -L $DOWNLOAD_URL -o /tmp/plasticity.rpm
+      - sudo dnf install /tmp/plasticity.rpm -y
+      - Remove-Item /tmp/plasticity.rpm -Force
+      update:
+      - |
+        $DOWNLOAD_URL = (Invoke-RestMethod -Uri "https://api.github.com/repos/nkallen/plasticity/releases/latest").assets
+        | Where-Object { $_.browser_download_url -match "x86_64\.rpm" }
+        | Select-Object -First 1 -ExpandProperty browser_download_url
+      - curl -L $DOWNLOAD_URL -o /tmp/plasticity.rpm
+      - sudo dnf install /tmp/plasticity.rpm -y
+      - Remove-Item /tmp/plasticity.rpm -Force
+
+  - category: Programming
+    packages:
+    - id: nodejs
+      name: Node.js
+      info: Node.js JavaScript runtime
+
+    - id: golang
+      name: Go
+      info: Go Programming Language
+
+    - id: claude desktop
+      name: Claude Desktop
+      info: Claude Desktop
+      install:
+      - curl -fsSL https://pkg.claude-desktop-debian.dev/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/claude-desktop.gpg
+      - echo "deb [signed-by=/usr/share/keyrings/claude-desktop.gpg arch=amd64,arm64] https://pkg.claude-desktop-debian.dev stable main" | sudo tee /etc/apt/sources.list.d/claude-desktop.list
+
+      # Install or update:
+      - sudo apt update && sudo apt install claude-desktop
+
+    - id: code
+      name: Visual Studio Code
+      info: VS Code Editor for Linux
+      install:
+      - sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+      # GPG Schlüssel und Repository importieren
+      - sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+      - '"[code]`nname=Visual Studio Code`nbaseurl=https://packages.microsoft.com/yumrepos/vscode`nenabled=1`nautorefresh=1`ntype=rpm-md`ngpgcheck=1`ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/vscode.repo > /dev/null'
+      # VS Code installieren
+      - sudo dnf check-update
+      - sudo dnf install code
+
+  - category: Infrastructure Tools
+    packages:
+    - id: azure-cli
+      name: Azure CLI
+      info: Azure Command-Line Interface
+      install:
+      - sudo rpm --import https://packages.microsoft.com/keys/microsoft-2025.asc
+      - sudo dnf install -y https://packages.microsoft.com/config/rhel/10/packages-microsoft-prod.rpm
+      - sudo dnf install azure-cli
+
+    - id: azure-cli
+      name: Bicep CLI
+      info: Azure Bicep CLI
+      install:
+      - sudo rpm --import https://packages.microsoft.com/keys/microsoft-2025.asc
+      - sudo dnf install -y https://packages.microsoft.com/config/rhel/10/packages-microsoft-prod.rpm
+      - sudo dnf install azure-cli
+      - az bicep install
+      - ln -s ~/.azure/bin/bicep ~/.local/bin/bicep
+      update:
+      - az bicep upgrade
+
+    - id: docker-desktop
+      name: Docker Desktop
+      info: Docker Desktop for Linux (Fedora)
+      install:
+      - sudo dnf -y install dnf-plugins-core
+      - sudo dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+      - wget -O /tmp/docker-desktop.rpm https://desktop.docker.com/linux/main/amd64/docker-desktop-x86_64.rpm
+      - sudo dnf install /tmp/docker-desktop.rpm -y
+      - systemctl --user enable docker-desktop
+      update:
+      - sudo dnf update docker-desktop

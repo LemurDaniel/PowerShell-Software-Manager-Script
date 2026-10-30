@@ -1,0 +1,100 @@
+displayName: NPM Packages
+description: NPM packages management
+
+process:
+  path: pwsh
+  args:
+    - -NoProfile
+    - -NonInteractive
+    - -Command
+
+  commands:
+    install:
+      - npm install -g ${id}
+
+    update:
+      - npm update -g ${id}
+
+    deinstall:
+      - npm uninstall -g ${id}
+
+    list:
+      - |
+        npm list --json --depth 0
+        | ConvertFrom-Json 
+        | Select-Object @{
+            Name       = "Properties";
+            Expression = { $_.dependencies.psobject.properties }
+        } 
+        | Select-Object -ExpandProperty Properties
+        | ForEach-Object {
+            [PSCustomObject]@{
+                id      = $_.Name
+                version = $_.Value.version
+            }
+        }
+        | ConvertTo-Json -Depth 3
+
+packages:
+  - id: sharp
+    name: sharp
+    info: High performance image processing
+    url: https://www.npmjs.com/package/sharp
+
+  - id: mssql
+    name: mssql
+    info: Microsoft SQL Server client
+    url: https://www.npmjs.com/package/mssql
+
+  - id: vscode/vsce
+    name: vscode/vsce
+    info: VS Code extension packaging
+    url: https://www.npmjs.com/package/vscode/vsce
+
+  - id: "@ionic/cli"
+    name: "@ionic/cli"
+    info: Ionic app CLI
+    url: https://www.npmjs.com/package/@ionic/cli
+
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Scaffolding Tools
+  - category: Scaffolding Tools
+    packages:
+      - id: yo
+        name: yo
+        info: Yeoman scaffolding tool
+        url: https://www.npmjs.com/package/yo
+
+      - id: generate-code
+        name: generate-code
+        info: Code generation utility
+        url: https://www.npmjs.com/package/generate-code
+
+      - id: react-native
+        name: react-native
+        info: React Native mobile framework
+        url: https://www.npmjs.com/package/react-native
+
+      - id: create-react-app
+        name: create-react-app
+        info: React app scaffolding
+        url: https://www.npmjs.com/package/create-react-app
+
+      - id: create-react-library
+        name: create-react-library
+        info: React library scaffolding
+        url: https://www.npmjs.com/package/create-react-library
+
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: Scaffolding Tools
+  - category: Infrastructure & Cloud Tools
+    packages:
+    - id: cdktf-cli
+      name: cdktf-cli
+      info: CDK for Terraform CLI
+      url: https://www.npmjs.com/package/cdktf-cli
+
+    - id: azure-functions-core-tools
+      name: azure-functions-core-tools
+      info: Azure Functions local tools
+      url: https://www.npmjs.com/package/azure-functions-core-tools

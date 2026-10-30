@@ -1,0 +1,292 @@
+id: winget
+displayName: Winget Software
+description: Windows Package Manager (winget) software management
+
+process:
+  path: pwsh
+  args:
+    - -NoProfile
+    - -NonInteractive
+    - -Command
+
+  commands:
+    install:
+      - Install-WinGetPackage -Id ${id} -Verbose
+
+    update:
+      - Update-WinGetPackage -Id ${id} -Verbose
+
+    deinstall:
+      - Uninstall-WinGetPackage -Id ${id} -Verbose
+
+    list:
+      - |
+        Get-WinGetPackage 
+        | Where-Object -Property ID -Match "^.*\.+.*"
+        | ForEach-Object {
+            [PSCustomObject]@{
+                id      = $_.Id
+                version = $_.InstalledVersion
+            }
+        }
+        | ConvertTo-Json -Depth 3
+
+packages:
+  # ///////////////////////////////////////////////////////////
+  # Git version control system
+  - id: Git.Git
+    name: Git.Git
+    info: Git version control
+
+    # ///////////////////////////////////////////////////////////
+    # Notepad++ text and code editor
+  - id: Notepad++.Notepad++
+    name: Notepad++.Notepad++
+    info: Text/code editor
+
+    # ///////////////////////////////////////////////////////////
+    # OBS Studio streaming and recording software
+  - id: OBSProject.OBSStudio
+    name: OBSProject.OBSStudio
+    info: Streaming software
+
+    # ///////////////////////////////////////////////////////////
+    # FreeCAD 3D parametric modeling software
+  - id: FreeCAD.FreeCAD
+    name: FreeCAD.FreeCAD
+    info: 3D CAD modeling
+
+    # ///////////////////////////////////////////////////////////
+    # Ultimaker Cura 3D printing slicer
+  - id: Ultimaker.Cura
+    name: Ultimaker.Cura
+    info: 3D slicer
+
+    # ///////////////////////////////////////////////////////////
+    # SQLite database engine
+  - id: SQLite.SQLite
+    name: SQLite.SQLite
+    info: SQL database
+
+    # ///////////////////////////////////////////////////////////
+    # GnuPG encryption suite for Windows
+  - id: GnuPG.Gpg4win
+    name: GnuPG.Gpg4win
+    info: Encryption suite
+
+    # ///////////////////////////////////////////////////////////
+    # jq JSON processor command line tool
+  - id: jqlang.jq
+    name: jqlang.jq
+    info: JSON processor
+
+    # ///////////////////////////////////////////////////////////
+    # Balena Etcher bootable USB creator
+  - id: Balena.Etcher
+    name: Balena.Etcher
+    info: Bootable USB creator
+
+    # ///////////////////////////////////////////////////////////
+    # RivaTuner Statistics Server gaming overlay
+  - id: Guru3D.RTSS
+    name: Guru3D.RTSS
+    info: Game stats overlay
+
+    # ///////////////////////////////////////////////////////////
+    # Node.js JavaScript runtime (LTS)
+  - id: OpenJS.NodeJS.LTS
+    name: OpenJS.NodeJS.LTS
+    info: Node.js runtime
+
+    # ///////////////////////////////////////////////////////////
+    # Kubernetes command line interface
+  - id: Kubernetes.kubectl
+    name: Kubernetes.kubectl
+    info: Kubernetes CLI
+
+    # ///////////////////////////////////////////////////////////
+    # Exec credential plugin kubectl needs for Entra-ID enabled AKS clusters.
+    # NOTE: 'int128.kubelogin' is a different tool, this is the Azure one.
+  - id: Microsoft.Azure.Kubelogin
+    name: Microsoft.Azure.Kubelogin
+    info: AKS Entra-ID login plugin
+
+    # ///////////////////////////////////////////////////////////
+    # 7-Zip file archiver and compressor
+  - id: 7zip.7zip
+    name: 7zip.7zip
+    info: File archiving
+
+    # ///////////////////////////////////////////////////////////
+    # GIMP image manipulation program
+  - id: GIMP.GIMP
+    name: GIMP.GIMP
+    info: Image editor
+
+    # ///////////////////////////////////////////////////////////
+    # Opera web browser
+  - id: Opera.Opera
+    name: Opera.Opera
+    info: Opera browser
+
+    # ///////////////////////////////////////////////////////////
+    # Opera GX gaming browser
+  - id: Opera.OperaGX
+    name: Opera.OperaGX
+    info: Opera GX browser
+
+    # ///////////////////////////////////////////////////////////
+    # Steam gaming platform
+  - id: Valve.Steam
+    name: Valve.Steam
+    info: Steam platform
+
+    # ///////////////////////////////////////////////////////////
+    # Discord chat and voice communication
+  - id: Discord.Discord
+    name: Discord.Discord
+    info: Discord chat/voice
+
+    # ///////////////////////////////////////////////////////////
+    # Draw.io diagram and flowchart creator
+  - id: JGraph.Draw
+    name: JGraph.Draw
+    info: Draw.io diagrams
+
+    # ///////////////////////////////////////////////////////////
+    # Postman API development and testing
+  - id: Postman.Postman
+    name: Postman.Postman
+    info: API testing
+
+    # ///////////////////////////////////////////////////////////
+    # Citrix Workspace remote desktop and applications
+  - id: Citrix.Workspace
+    name: Citrix.Workspace
+    info: Remote desktop/app
+
+    # ///////////////////////////////////////////////////////////
+    # Docker Desktop containerization platform
+  - id: Docker.DockerDesktop
+    name: Docker.DockerDesktop
+    info: Docker containers
+
+    # ///////////////////////////////////////////////////////////
+    # Obsidian markdown knowledge base
+  - id: Obsidian.Obsidian
+    name: Obsidian.Obsidian
+    info: Markdown notes
+
+    # ///////////////////////////////////////////////////////////
+    # Nmap network discovery and security scanner
+  - id: Insecure.Nmap
+    name: Insecure.Nmap
+    info: Network scanner
+
+    # ///////////////////////////////////////////////////////////
+    # CrystalDiskMark disk benchmark utility
+  - id: CrystalDewWorld.CrystalDiskMark
+    name: CrystalDewWorld.CrystalDiskMark
+    info: Disk benchmark
+
+    # ///////////////////////////////////////////////////////////
+    # CrystalDiskInfo disk health monitoring
+  - id: CrystalDewWorld.CrystalDiskInfo
+    name: CrystalDewWorld.CrystalDiskInfo
+    info: Disk health monitor
+
+    # ///////////////////////////////////////////////////////////
+    # Microsoft Teams collaboration platform
+  - id: Microsoft.Teams
+    name: Microsoft.Teams
+    info: Teams collaboration
+
+    # ///////////////////////////////////////////////////////////
+    # Azure command line interface
+  - id: Microsoft.AzureCLI
+    name: Microsoft.AzureCLI
+    info: Azure CLI
+
+    # ///////////////////////////////////////////////////////////
+    # Azure Bicep infrastructure as code
+  - id: Microsoft.Bicep
+    name: Microsoft.Bicep
+    info: Azure IaC tool
+
+    # ///////////////////////////////////////////////////////////
+    # Microsoft Power BI analytics and visualization
+  - id: Microsoft.PowerBI
+    name: Microsoft.PowerBI
+    info: Analytics/visualization
+
+    # ///////////////////////////////////////////////////////////
+    # Windows Terminal modern terminal application
+  - id: Microsoft.WindowsTerminal
+    name: Microsoft.WindowsTerminal
+    info: Windows terminal
+
+    # ///////////////////////////////////////////////////////////
+    # Visual Studio Code editor
+  - id: Microsoft.VisualStudioCode
+    name: Microsoft.VisualStudioCode
+    info: VS Code editor
+
+    # ///////////////////////////////////////////////////////////
+    # Visual Studio 2022 Community IDE
+  - id: Microsoft.VisualStudio.2022.Community
+    name: Microsoft.VisualStudio.2022.Community
+    info: VS 2022 IDE
+
+    # ///////////////////////////////////////////////////////////
+    # SQL Server Management Studio
+  - id: Microsoft.SQLServerManagementStudio
+    name: Microsoft.SQLServerManagementStudio
+    info: SQL management
+
+    # ///////////////////////////////////////////////////////////
+    # Azure Functions Core Tools
+  - id: Microsoft.Azure.FunctionsCoreTools
+    name: Microsoft.Azure.FunctionsCoreTools
+    info: Azure Functions local
+
+    # ///////////////////////////////////////////////////////////
+    # Azure Storage Explorer
+  - id: Microsoft.Azure.StorageExplorer
+    name: Microsoft.Azure.StorageExplorer
+    info: Azure storage explorer
+
+    # ///////////////////////////////////////////////////////////
+    # Azure Data Studio
+  - id: Microsoft.Azure.DataStudio
+    name: Microsoft.Azure.DataStudio
+    info: Data analytics studio
+
+    # ///////////////////////////////////////////////////////////
+    # PowerShell scripting environment
+  - id: Microsoft.PowerShell
+    name: Microsoft.PowerShell
+    info: PowerShell scripting
+
+    # ///////////////////////////////////////////////////////////
+    # .NET 8 Software Development Kit (LTS)
+  - id: Microsoft.DotNet.SDK.8
+    name: Microsoft.DotNet.SDK.8
+    info: .NET 8 SDK
+
+    # ///////////////////////////////////////////////////////////
+    # Azure AZCopy file transfer utility
+  - id: Microsoft.Azure.AZCopy.10
+    name: Microsoft.Azure.AZCopy.10
+    info: Azure file transfer
+
+    # ///////////////////////////////////////////////////////////
+    # MySQL Workbench database administration
+  - id: Oracle.MySQLWorkbench
+    name: Oracle.MySQLWorkbench
+    info: MySQL admin
+
+    # ///////////////////////////////////////////////////////////
+    # Genymotion Android device emulator
+  - id: Genymobile.Genymotion
+    name: Genymobile.Genymotion
+    info: Android device emulator
