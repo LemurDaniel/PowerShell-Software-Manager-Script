@@ -212,6 +212,11 @@ packages:
         name: FreeCAD.FreeCAD
         info: 3D CAD modeling
 
+      # Blender 3D creation suite
+      - id: BlenderFoundation.Blender
+        name: BlenderFoundation.Blender
+        info: Blender 3D suite
+
       # Ultimaker Cura 3D printing slicer
       - id: Ultimaker.Cura
         name: Ultimaker.Cura
