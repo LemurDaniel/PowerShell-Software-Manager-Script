@@ -81,6 +81,11 @@ packages:
         name: jqlang.jq
         info: JSON processor
 
+      # uv Python package and project manager
+      - id: astral-sh.uv
+        name: astral-sh.uv
+        info: Python package manager
+
       # Postman API development and testing
       - id: Postman.Postman
         name: Postman.Postman
