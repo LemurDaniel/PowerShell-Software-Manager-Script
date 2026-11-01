@@ -108,8 +108,8 @@ packages:
 
           Write-Host -ForegroundColor Green "Done. SolidCraft removed."
 
-      # SolidCraft MCP: registers the built-in 'solidcraft-cli mcp' server in Claude Desktop.
-      # NOTE: update re-runs the install, which is safe to repeat.
+      # SolidCraft MCP: registers the built-in 'solidcraft-cli mcp' server for Claude Desktop (Chat tab) and Claude Code (Code tab).
+      # NOTE: update re-runs the install, which is safe to repeat. Claude must be closed, it rewrites its configs on exit.
       - id: tangency-labs.SolidCraftMCP
         name: tangency-labs.SolidCraftMCP
         info: SolidCraft MCP for Claude
@@ -123,29 +123,51 @@ packages:
               throw "SolidCraft not found. Install 'tangency-labs.SolidCraft' first."
           }
 
-          # >> Register MCP server in Claude Desktop (full path, PATH may be stale)
-          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
-          $config = (Test-Path $configPath) ? (Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable) : $null
-          $config ??= @{}
-          $config.mcpServers ??= @{}
-          $config.mcpServers.solidcraft = @{ command = $cli; args = @('mcp') }
-          $null = New-Item -ItemType Directory -Path (Split-Path $configPath) -Force
-          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+          # >> A running Claude rewrites its configs on exit and drops the new entry
+          if ($null -NE (Get-Process -Name 'Claude' -ErrorAction SilentlyContinue)) {
+              throw "Claude Desktop is running. Close it completely (also the tray icon) first."
+          }
 
-          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop."
+          # >> Register MCP server (full path, PATH may be stale)
+          #    Chat tab: claude_desktop_config.json, Code tab: user scope in ~/.claude.json
+          $targets = @(
+              @{ Path = (Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'); Entry = [ordered]@{ command = $cli; args = @('mcp') } }
+              @{ Path = (Join-Path $HOME '.claude.json'); Entry = [ordered]@{ type = 'stdio'; command = $cli; args = @('mcp'); env = @{} } }
+          )
+          foreach ($target in $targets) {
+              $config = (Test-Path $target.Path) ? (Get-Content -Path $target.Path -Raw | ConvertFrom-Json -AsHashtable) : $null
+              $config ??= @{}
+              $config.mcpServers ??= @{}
+              $config.mcpServers.solidcraft = $target.Entry
+              $null = New-Item -ItemType Directory -Path (Split-Path $target.Path) -Force
+              $config | ConvertTo-Json -Depth 100 | Set-Content -Path $target.Path
+          }
+
+          Write-Host -ForegroundColor Green "Done. Start Claude Desktop again."
 
         update: *solidcraftMcpInstall
 
         deinstall: |
           $ErrorActionPreference = 'Stop'
 
-          # >> Remove MCP server from Claude Desktop
-          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
-          $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable
-          $config.mcpServers.Remove('solidcraft')
-          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+          if ($null -NE (Get-Process -Name 'Claude' -ErrorAction SilentlyContinue)) {
+              throw "Claude Desktop is running. Close it completely (also the tray icon) first."
+          }
 
-          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop."
+          # >> Remove MCP server from Chat tab and Code tab config
+          $configPaths = @(
+              Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+              Join-Path $HOME '.claude.json'
+          )
+          foreach ($configPath in $configPaths) {
+              if (-NOT (Test-Path $configPath)) { continue }
+              $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable
+              if ($null -EQ $config.mcpServers) { continue }
+              $config.mcpServers.Remove('solidcraft')
+              $config | ConvertTo-Json -Depth 100 | Set-Content -Path $configPath
+          }
+
+          Write-Host -ForegroundColor Green "Done. Start Claude Desktop again."
 
       # Blender MCP (ahujasid): uv + Blender add-on + Claude Desktop config in one step.
       # NOTE: update re-runs the install script, which is safe to repeat.
