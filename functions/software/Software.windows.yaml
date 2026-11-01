@@ -1,0 +1,205 @@
+id: windows
+displayName: Windows Custom Software
+description: Custom install scripts for software not available as a package
+
+process:
+  path: pwsh
+  args:
+    - -NoProfile
+    - -NonInteractive
+    - -Command
+
+  # >> Fallbacks only, every package defines its own install/update/deinstall
+  commands:
+    install:
+      - throw "No install script defined for '${id}'"
+
+    update:
+      - throw "No update script defined for '${id}'"
+
+    deinstall:
+      - throw "No deinstall script defined for '${id}'"
+
+    # >> Detects custom installs by their footprint on the system
+    list:
+      - |
+        $installed = @()
+
+        # >> MCP servers: registered in Claude Desktop config
+        $mcpServers = @{
+            blender    = 'ahujasid.BlenderMCP'
+            solidcraft = 'tangency-labs.SolidCraftMCP'
+        }
+        $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+        if (Test-Path $configPath) {
+            $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable
+            foreach ($server in $mcpServers.Keys) {
+                if ($null -NE $config.mcpServers.$server) {
+                    $installed += [PSCustomObject]@{
+                        id      = $mcpServers[$server]
+                        version = 'latest'
+                    }
+                }
+            }
+        }
+
+        # >> SolidCraft: MSI entry in the uninstall registry
+        $uninstallKeys = @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+            'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+        )
+        $solidcraft = Get-ItemProperty -Path $uninstallKeys -ErrorAction SilentlyContinue
+        | Where-Object -Property DisplayName -Like 'SolidCraft*'
+        | Select-Object -First 1
+        if ($null -NE $solidcraft) {
+            $installed += [PSCustomObject]@{
+                id      = 'tangency-labs.SolidCraft'
+                version = $solidcraft.DisplayVersion
+            }
+        }
+
+        $installed | ConvertTo-Json -Depth 3 -AsArray
+
+packages:
+  # ///////////////////////////////////////////////////////////
+  # Sub Category: 3D & Media
+  - category: 3D & Media
+    packages:
+      # SolidCraft parametric 3D CAD (Rust), MSI from latest GitHub release.
+      # NOTE: update re-runs the install, the MSI upgrades in place.
+      - id: tangency-labs.SolidCraft
+        name: tangency-labs.SolidCraft
+        info: Parametric 3D CAD
+        install: &solidcraftInstall |
+          $ErrorActionPreference = 'Stop'
+
+          # >> Download latest MSI matching the CPU architecture
+          $arch = $env:PROCESSOR_ARCHITECTURE -EQ 'ARM64' ? 'arm64' : 'x64'
+          $msi = Join-Path $env:TEMP "solidcraft-windows-$arch.msi"
+          Invoke-WebRequest -Uri "https://github.com/tangency-labs/solidcraft/releases/latest/download/solidcraft-windows-$arch.msi" -OutFile $msi
+
+          # >> Install via msiexec, /passive shows progress + UAC prompt
+          $process = Start-Process -FilePath msiexec.exe -ArgumentList "/i `"$msi`" /passive /norestart" -Wait -PassThru
+          Remove-Item -Path $msi -Force
+          if ($process.ExitCode -NotIn 0, 3010) {
+              throw "msiexec failed with exit code $($process.ExitCode)"
+          }
+
+          Write-Host -ForegroundColor Green "Done. SolidCraft installed."
+
+        update: *solidcraftInstall
+
+        deinstall: |
+          $ErrorActionPreference = 'Stop'
+
+          # >> Uninstall via ProductCode from the uninstall registry
+          $uninstallKeys = @(
+              'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+              'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+          )
+          $solidcraft = Get-ItemProperty -Path $uninstallKeys -ErrorAction SilentlyContinue
+          | Where-Object -Property DisplayName -Like 'SolidCraft*'
+          | Select-Object -First 1
+
+          $process = Start-Process -FilePath msiexec.exe -ArgumentList "/x $($solidcraft.PSChildName) /passive /norestart" -Wait -PassThru
+          if ($process.ExitCode -NotIn 0, 3010) {
+              throw "msiexec failed with exit code $($process.ExitCode)"
+          }
+
+          Write-Host -ForegroundColor Green "Done. SolidCraft removed."
+
+      # SolidCraft MCP: registers the built-in 'solidcraft-cli mcp' server in Claude Desktop.
+      # NOTE: update re-runs the install, which is safe to repeat.
+      - id: tangency-labs.SolidCraftMCP
+        name: tangency-labs.SolidCraftMCP
+        info: SolidCraft MCP for Claude
+        install: &solidcraftMcpInstall |
+          $ErrorActionPreference = 'Stop'
+
+          # >> Locate solidcraft-cli via install dir written by the MSI
+          $installDir = Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\SolidCraft' -Name InstallDir -ErrorAction SilentlyContinue
+          $cli = $installDir ? (Join-Path $installDir 'solidcraft-cli.exe') : $null
+          if ($null -EQ $cli -OR -NOT (Test-Path $cli)) {
+              throw "SolidCraft not found. Install 'tangency-labs.SolidCraft' first."
+          }
+
+          # >> Register MCP server in Claude Desktop (full path, PATH may be stale)
+          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+          $config = (Test-Path $configPath) ? (Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable) : $null
+          $config ??= @{}
+          $config.mcpServers ??= @{}
+          $config.mcpServers.solidcraft = @{ command = $cli; args = @('mcp') }
+          $null = New-Item -ItemType Directory -Path (Split-Path $configPath) -Force
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+
+          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop."
+
+        update: *solidcraftMcpInstall
+
+        deinstall: |
+          $ErrorActionPreference = 'Stop'
+
+          # >> Remove MCP server from Claude Desktop
+          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+          $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable
+          $config.mcpServers.Remove('solidcraft')
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+
+          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop."
+
+      # Blender MCP (ahujasid): uv + Blender add-on + Claude Desktop config in one step.
+      # NOTE: update re-runs the install script, which is safe to repeat.
+      - id: ahujasid.BlenderMCP
+        name: ahujasid.BlenderMCP
+        info: Blender MCP for Claude
+        install: &blenderMcpInstall |
+          $ErrorActionPreference = 'Stop'
+
+          # >> uv provides 'uvx', which runs the MCP server
+          if ($null -EQ (Get-WinGetPackage -Id astral-sh.uv -MatchOption Equals)) {
+              Install-WinGetPackage -Id astral-sh.uv -Verbose
+          }
+
+          # >> Locate newest Blender installation
+          $blender = Get-ChildItem -Path "$env:ProgramFiles\Blender Foundation" -Filter blender.exe -Recurse -ErrorAction SilentlyContinue
+          | Sort-Object -Property LastWriteTime -Descending
+          | Select-Object -First 1
+          if ($null -EQ $blender) {
+              throw "Blender not found. Install 'BlenderFoundation.Blender' first."
+          }
+
+          # >> Download add-on and install + enable it in Blender
+          $addon = Join-Path $env:TEMP 'blender_mcp_addon.py'
+          $enable = Join-Path $env:TEMP 'blender_mcp_enable.py'
+          Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/ahujasid/blender-mcp/main/addon.py' -OutFile $addon
+          @"
+          import bpy
+          bpy.ops.preferences.addon_install(filepath=r'$addon', overwrite=True)
+          bpy.ops.preferences.addon_enable(module='blender_mcp_addon')
+          bpy.ops.wm.save_userpref()
+          "@ | Set-Content -Path $enable
+          & $blender.FullName --background --python $enable
+
+          # >> Register MCP server in Claude Desktop
+          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+          $config = (Test-Path $configPath) ? (Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable) : $null
+          $config ??= @{}
+          $config.mcpServers ??= @{}
+          $config.mcpServers.blender = @{ command = 'uvx'; args = @('blender-mcp') }
+          $null = New-Item -ItemType Directory -Path (Split-Path $configPath) -Force
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+
+          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop, then in Blender: N-Panel > BlenderMCP > Connect"
+
+        update: *blenderMcpInstall
+
+        deinstall: |
+          $ErrorActionPreference = 'Stop'
+
+          # >> Remove MCP server from Claude Desktop (add-on stays in Blender)
+          $configPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+          $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json -AsHashtable
+          $config.mcpServers.Remove('blender')
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+
+          Write-Host -ForegroundColor Green "Done. Restart Claude Desktop. Disable the add-on in Blender manually if needed."
